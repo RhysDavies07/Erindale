@@ -1,7 +1,7 @@
 import datetime
 import uuid
 
-ICS_FILE = "erindale_shifts.ics"
+ICS_FILE = "Erindale_Shifts2.ics"
 
 def add_event(date_str, time_str):
     """
@@ -58,4 +58,4 @@ END:VEVENT
 
 
 # Example usage:
-add_event("05 09", "1600-1900")
+add_event("27 09", "1600-1900")
