@@ -58,4 +58,4 @@ END:VEVENT
 
 
 # Example usage:
-add_event("27 09", "1600-1900")
+add_event("15 03", "1700-2000")
