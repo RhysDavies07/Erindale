@@ -1,0 +1,86 @@
+import datetime
+import uuid
+import os
+
+ICS_FILE = "Erindale_Shifts2.ics"
+
+def ensure_ics_exists():
+    """Creates a basic ICS structure if the file doesn't exist."""
+    if not os.path.exists(ICS_FILE):
+        with open(ICS_FILE, "w", encoding="utf-8") as f:
+            f.write("BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Gemini//Shift Scheduler//EN\nEND:VCALENDAR")
+
+def add_event(date_str, time_str):
+    """
+    date_str format: "DD MM" (e.g. "24 08" -> 24th August)
+    time_str format: "HHMM-HHMM" (e.g. "1600-1900")
+    """
+    try:
+        # Parse date
+        day, month = map(int, date_str.split())
+        year = datetime.datetime.now().year
+        start_time, end_time = time_str.split("-")
+        
+        # Parse times
+        start_hour, start_minute = int(start_time[:2]), int(start_time[2:])
+        end_hour, end_minute = int(end_time[:2]), int(end_time[2:])
+        
+        # Build datetime objects
+        start_dt = datetime.datetime(year, month, day, start_hour, start_minute)
+        end_dt = datetime.datetime(year, month, day, end_hour, end_minute)
+
+        # Format for ICS
+        dtstart_str = start_dt.strftime("%Y%m%dT%H%M%S")
+        dtend_str = end_dt.strftime("%Y%m%dT%H%M%S")
+        dtstamp_str = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+        uid_str = f"{uuid.uuid4().int}@ical.marudot.com"
+
+        event = f"""
+BEGIN:VEVENT
+DTSTAMP:{dtstamp_str}
+UID:{uid_str}
+DTSTART;TZID=Australia/Adelaide:{dtstart_str}
+DTEND;TZID=Australia/Adelaide:{dtend_str}
+SUMMARY:Work - Erindale
+LOCATION:Erindale Chicken & Seafood 365 Kensington Rd\\, Kensington Gardens SA 5068\\, Australia
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Work - Erindale
+TRIGGER:-PT30M
+END:VALARM
+END:VEVENT
+"""
+
+        with open(ICS_FILE, "r", encoding="utf-8") as f:
+            ics_content = f.read()
+
+        new_content = ics_content.replace("END:VCALENDAR", event + "END:VCALENDAR")
+
+        with open(ICS_FILE, "w", encoding="utf-8") as f:
+            f.write(new_content)
+
+        print(f"✅ Shift on {date_str} added!")
+
+    except Exception as e:
+        print(f"❌ Error adding shift: {e}. Please check your format.")
+
+def main():
+    ensure_ics_exists()
+    print("--- Erindale Shift Logger ---")
+    print("Enter your shifts below. Use '\' at any time to save and exit.")
+    
+    while True:
+        date_input = input("\nEnter Date (DD MM): ").strip()
+        if date_input == "\\":
+            break
+            
+        time_input = input("Enter Time (HHMM-HHMM): ").strip()
+        if time_input == "\\":
+            break
+            
+        add_event(date_input, time_input)
+
+    print("\n👋 All done! Your calendar file has been updated.")
+
+if __name__ == "__main__":
+    main()
